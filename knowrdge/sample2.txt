@@ -1,0 +1,84 @@
+# 【第1回】Next.js × Firebaseチャット構想！LINE風UIを目指して
+
+こんにちは、Ryuseiです！
+
+今回は、自作のNext.jsアプリにLINE風チャット機能を組み込むための構想と、試行錯誤のプロセスを振り返ります。
+
+---
+
+## 🔍 開発の目的
+
+- **目的**：個人プロフィールサイトにリアルタイムチャット機能を追加すること
+- **ターゲットUI**：スマホでも快適に使えるLINE風チャット
+- **主な技術**：
+    - Next.js（App Router構成）
+    - Tailwind CSS（UI設計）
+    - Firebase（データベース＋認証）
+    - NextAuth.js（Googleログイン）
+
+---
+
+## 🛠️ 技術構成の全体像と理由
+
+| 技術 | 理由 |
+| --- | --- |
+| Next.js | SSR対応の柔軟なフレームワーク |
+| Firebase | チャットに最適なリアルタイムDB |
+| Tailwind CSS | モバイルUIとの相性が良い |
+| NextAuth.js | Googleログインの導入が簡単 |
+
+---
+
+## 📗 Listと地図（NavMap）連携の試行錯誤メモ
+
+### ✅ Step1：リスト表示の実装
+
+- `works.json` のデータを `List.tsx` と `WorkList.tsx` に分けて表示
+- ここで表示は成功！
+
+### ✅ Step2：リストの選択を地図に反映したい
+
+- `useState` で選択IDを管理
+- `List.tsx` から ID を取得し、該当の座標データを `NavMap` に渡すように改修
+
+### ✅ Step3：構成の見直し
+
+- `page.tsx` → `WorkList.tsx` → `List.tsx` という構成だったが、冗長と感じて `WorkList.tsx` を削除
+- 現在は `page.tsx` → `List.tsx` → `NavMap` のシンプルな構成で整理中
+
+---
+
+## 🧪 認証・セッションまわりのエラーと対策記録
+
+### ⚠️ 「React Context is unavailable in Server Components」
+
+- 原因：`Header.tsx` に `useSession()` を含む `LoginButton` を配置していた
+- 対策：`Header.tsx` を `"use client"` に変更 → ✅ 解決！
+
+### ⚠️ 「You are attempting to export metadata from a component marked with 'use client'」
+
+- 原因：`layout.tsx` に `"use client"` を付けてしまった
+- 対策：`layout.tsx` を Server Component のまま維持し、`metadata` を正しく定義 → ✅ 解決！
+
+### ⚠️ 「useSession() must be wrapped in a <SessionProvider />」
+
+- 原因：`SessionProvider` のスコープ外に `LoginButton` が存在していた
+- 対策：`Header.tsx` を Client Component にし、App Router構成内に設置 → ✅ 解決！
+
+---
+
+## 📌 今の状態と次のステップ
+
+### ✅ 実装済み
+
+- Googleログイン成功
+- セッション状態の取得OK
+- App全体でSessionProviderが有効に
+
+### 🔜 次にやること
+
+1. チャットDB（Firestore）の設計
+2. リアルタイムでのメッセージ表示機能
+3. 既読・未読ステータスの実装
+4. Firebase Storageによる画像投稿
+5. スマホUIの改善とTailwindでの最適化
