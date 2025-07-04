@@ -26,12 +26,21 @@
 **内容**: ブログ記事の構成案（タイトル、見出し、内容の概要）
 
 ### 4. SEO対策されたブログ記事の作成
-**ファイル**: `blogs/created_blogs/yyyy-mm-dd-keywords.md`
+**ファイル**: `blogs/created_blogs_md/yyyy-mm-dd-keywords.md`
 **特徴**:
 - **メタデータ**: title、description、keywords、date、author、tags
 - **SEOフレンドリーなファイル名**: 日付-キーワード.md
 - **見出し構造**: H1、H2、H3の階層的構成
 - **関連記事リンク**: 内部リンクの設定
+
+###4.5 SEO対策されたブログ記事のHTML化
+**ファイル**: `blogs/created_blogs/yyyy-mm-dd-blog.html
+**特徴**:
+- **メタデータ**: title、description、keywords、date、author、tags伝わる文章作成
+- **SEOフレンドリーなファイル名**: 日付-キーワード.HTML
+- **見出し構造**: H1、H2、H3の階層的構成
+- **関連記事リンク**: 内部リンクの設定
+
 
 ### 5. 記事作成時の注意点
 **文章スタイル**:
