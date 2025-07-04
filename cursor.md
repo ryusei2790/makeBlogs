@@ -58,7 +58,8 @@
 ### 6. ファイル管理のルール
 - **メモ**: `memo/` フォルダ（日次記録）
 - **構成案**: `memoToBlogs/` フォルダ（記事構成）
-- **完成記事**: `blogs/created_blogs/` フォルダ（SEO対策済み）
+- **完成記事**: `blogs/created_blogs_md/` フォルダ（SEO対策済み）
+- **投稿記事完成**: `blogs/created_blogs/` フォルダ
 
 ### 7. 品質チェック項目
 - [ ] `note/cursor.md`のガイドラインに従っているか
