@@ -1,0 +1,2 @@
+# This file ensures the created_blogs_json directory is tracked by Git
+# Completed blog JSON files will be generated here by the Dify API integration script 

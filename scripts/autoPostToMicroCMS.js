@@ -3,7 +3,7 @@ const path = require('path');
 const { postToMicroCMS } = require('./postToMicroCMS');
 
 // 監視するディレクトリ
-const targetDir = path.join(process.cwd(), 'blogs/created_blogs');
+const targetDir = path.join(process.cwd(), 'blogs/created_blogs_json');
 
 // .mdファイルの作成を監視
 const watcher = chokidar.watch(targetDir, {
