@@ -1,2 +1,33 @@
 # 環境変数ファイル
-.env* 
+.env
+.env.local
+.env.*.local
+
+# ログファイル
+logs/
+*.log
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 生成されたファイル
+blogs/memoToBlogs/
+blogs/created_blogs_md/
+blogs/created_blogs_json/
+
+# OS生成ファイル
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 一時ファイル
+*.tmp
+*.temp 

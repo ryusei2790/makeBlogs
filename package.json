@@ -4,7 +4,14 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node scripts/autoPostToMicroCMS.js"
+    "start": "node scripts/index.js",
+    "dev": "node scripts/index.js",
+    "local": "node scripts/run-local.js",
+    "daemon": "node scripts/daemon.js",
+    "daemon:status": "node scripts/daemon.js --status",
+    "daemon:run-now": "node scripts/daemon.js --run-now",
+    "watch": "node scripts/autoPostToMicroCMS.js",
+    "cron-setup": "chmod +x scripts/setup-cron.sh && ./scripts/setup-cron.sh"
   },
   "keywords": [],
   "author": "",
@@ -12,6 +19,7 @@
   "description": "",
   "dependencies": {
     "gray-matter": "^4.0.3",
-    "node-fetch": "^2.6.7"
+    "node-fetch": "^2.6.7",
+    "dotenv": "^16.3.1"
   }
 }

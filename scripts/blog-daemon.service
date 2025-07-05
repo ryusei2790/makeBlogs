@@ -1,0 +1,19 @@
+[Unit]
+Description=Blog Article Auto Generation Daemon
+After=network.target
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+WorkingDirectory=/path/to/your/blogArticles
+ExecStart=/usr/bin/node scripts/daemon.js
+Restart=always
+RestartSec=10
+Environment=NODE_ENV=production
+
+# ログ設定
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target 

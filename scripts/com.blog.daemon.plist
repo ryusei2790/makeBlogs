@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.blog.daemon</string>
+    
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/node</string>
+        <string>/path/to/your/blogArticles/scripts/daemon.js</string>
+    </array>
+    
+    <key>WorkingDirectory</key>
+    <string>/path/to/your/blogArticles</string>
+    
+    <key>RunAtLoad</key>
+    <true/>
+    
+    <key>KeepAlive</key>
+    <true/>
+    
+    <key>StandardOutPath</key>
+    <string>/path/to/your/blogArticles/logs/daemon.log</string>
+    
+    <key>StandardErrorPath</key>
+    <string>/path/to/your/blogArticles/logs/daemon-error.log</string>
+    
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>NODE_ENV</key>
+        <string>production</string>
+    </dict>
+</dict>
+</plist> 
