@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>【学習記録】ReactのuseStateでリストが増殖？ページネーション実装の落とし穴</title>
+  <meta name="description" content="ReactのuseStateでリストが増殖してしまうページネーション実装時の落とし穴と、その考察・解決へのアプローチを実体験ベースで解説します。">
+  <meta name="keywords" content="React, useState, ページネーション, リスト, バグ, フロントエンド, 学習記録">
+  <meta name="author" content="Ryusei">
+  <meta name="date" content="2025-07-04">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <article>
+    <h1>【学習記録】ReactのuseStateでリストが増殖？ページネーション実装の落とし穴</h1>
+    <p>こんにちは！Ryuseiです。</p>
+    <p>今日は友達から依頼されたアプリ開発で、Reactのページネーション実装中に遭遇したuseStateの問題について考えたことをまとめます。</p>
+    <hr/>
+    <h2>背景・目的</h2>
+    <p>最近、友達のアプリ開発を手伝うことになり、リストのページネーション機能を実装していました。ページネーションは、たくさんのデータを分割して表示するための定番機能です。今回は、ReactのuseStateを使ってリストの状態管理をしていたのですが、思わぬ落とし穴にハマりました。</p>
+    <hr/>
+    <h2>問題の発生</h2>
+    <p>ページを切り替えるたびに、useStateで管理しているリストがどんどん長くなってしまう現象が発生しました。具体的には、次のページや前のページに戻ると、useStateで保存していたリストに新しいデータが追加されるのは良いのですが、元々画面に描画されていたリストが消えずに残ってしまい、リストが増殖していく状態です。</p>
+    <hr/>
+    <h2>試行錯誤・考察</h2>
+    <p>正直、useStateの使い方はAIに任せっきりで、あまり深く理解していませんでした。カウンターを作るときは、次の数字にしっかり入れ替わるので、同じようにリストも「入れ替え」動作を意識すれば良いのでは？と気づきました。これなら、コードを大きく変えずに実装できそうです。</p>
+    <pre><code class="language-jsx">// イメージ例
+const [items, setItems] = useState([]);
+
+const handlePageChange = (newPageItems) => {
+  setItems(newPageItems); // 追加ではなく、入れ替え！
+};
+</code></pre>
+    <hr/>
+    <h2>本日の進捗と今後の課題</h2>
+    <p>今日は考えただけで実装まではできませんでした。この問題は明日に持ち越しです。今後は、useStateの正しい使い方やリストの管理方法について、もう少し深く学んでいきたいと思います。</p>
+    <hr/>
+    <h2>まとめ &amp; 次回予告</h2>
+    <p>今回は、ReactのuseStateでリストが増殖してしまうページネーション実装時の落とし穴について考察しました。次回は、実際にuseStateの挙動を検証し、リストの増殖問題を解決していく予定です。</p>
+    <p>引き続き、学んだことをブログとしてまとめていくので、よろしくお願いします！</p>
+    <hr/>
+    <h3>関連記事</h3>
+    <ul>
+      <li><a href="2025-06-30-nextjs-firebase-google-login-errors.html">【実践メモ】Next.js×FirebaseでLINE風チャット機能を実装！Googleログインとエラー解決の記録</a></li>
+    </ul>
+  </article>
+</body>
+</html> 

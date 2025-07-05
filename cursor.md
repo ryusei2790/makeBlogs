@@ -34,6 +34,7 @@
 - **関連記事リンク**: 内部リンクの設定
 
 ###4.5 SEO対策されたブログ記事のHTML化
+created_blogs_mdの.mdファイルいい感じにマークアップしてHTMLファイルを作成してをcreated_blogsの中に作成します。
 **ファイル**: `blogs/created_blogs/yyyy-mm-dd-blog.html
 **特徴**:
 - **メタデータ**: title、description、keywords、date、author、tags伝わる文章作成
