@@ -54,7 +54,15 @@ async function postToDify(memoContent) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        inputs: {},
+        inputs: {
+          memo_content: memoContent,
+          blog_style: process.env.BLOG_STYLE || "学習記録",
+          target_audience: process.env.TARGET_AUDIENCE || "初心者",
+          technical_focus: process.env.TECHNICAL_FOCUS || "",
+          blog_length: process.env.BLOG_LENGTH || "標準",
+          include_code_examples: process.env.INCLUDE_CODE_EXAMPLES !== "false",
+          seo_keywords: process.env.SEO_KEYWORDS || ""
+        },
         query: `以下のメモ内容を分析して、ブログ記事のアイデアや技術的な考察を提案してください：\n\n${memoContent}`,
         response_mode: "blocking",
         user: "github-actions"
@@ -101,7 +109,28 @@ function saveResult(date, memoContent, difyResponse) {
 
 // Difyの返答を解析してブログ記事構成案を作成
 function createBlogStructure(date, difyResponse) {
-  const answer = difyResponse.answer || difyResponse.message || '';
+  // Dify APIの正しいレスポンス形式に基づいて回答を取得
+  let answer = '';
+  
+  if (difyResponse.error) {
+    // エラーの場合
+    console.error('Dify API Error:', difyResponse.error);
+    answer = `エラーが発生しました: ${difyResponse.error.message}`;
+  } else if (difyResponse.answer) {
+    // 成功の場合
+    answer = difyResponse.answer;
+    console.log('Dify API Response - Answer:', answer);
+    console.log('Dify API Response - Conversation ID:', difyResponse.conversation_id);
+    console.log('Dify API Response - Message ID:', difyResponse.message_id);
+    
+    if (difyResponse.metadata && difyResponse.metadata.usage) {
+      console.log('Dify API Response - Usage:', difyResponse.metadata.usage);
+    }
+  } else {
+    // 予期しないレスポンス形式の場合
+    console.warn('Unexpected Dify API response format:', difyResponse);
+    answer = JSON.stringify(difyResponse, null, 2);
+  }
   
   // Difyの返答をより詳細に解析
   const sections = [
@@ -239,6 +268,69 @@ function saveCompletedBlogJSON(date, blogStructure) {
   }
 }
 
+// 次の日の日付を取得
+function getNextDayDate(currentDate) {
+  const date = new Date(currentDate + 'T00:00:00+09:00'); // JST
+  date.setDate(date.getDate() + 1);
+  
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}`;
+}
+
+// 次の日のmemoファイルを作成
+function createNextDayMemo(currentDate) {
+  const nextDate = getNextDayDate(currentDate);
+  const memoDir = path.join(__dirname, '..', 'memo');
+  const nextMemoPath = path.join(memoDir, `${nextDate}-topic.md`);
+  
+  // memoディレクトリが存在しない場合は作成
+  if (!fs.existsSync(memoDir)) {
+    fs.mkdirSync(memoDir, { recursive: true });
+  }
+  
+  // 既にファイルが存在する場合はスキップ
+  if (fs.existsSync(nextMemoPath)) {
+    console.log(`Next day memo already exists: ${nextMemoPath}`);
+    return false;
+  }
+  
+  // 次の日のmemoファイルのテンプレートを作成
+  const memoTemplate = process.env.MEMO_TEMPLATE || `# ${nextDate} の学習メモ
+
+## 今日学んだこと
+
+- 
+
+## 技術的な発見
+
+- 
+
+## ブログ記事のアイデア
+
+- 
+
+## 明日やること
+
+- 
+
+## メモ
+
+- 
+`;
+  
+  try {
+    fs.writeFileSync(nextMemoPath, memoTemplate, 'utf8');
+    console.log(`Next day memo created: ${nextMemoPath}`);
+    return true;
+  } catch (error) {
+    console.error(`Error creating next day memo: ${error.message}`);
+    return false;
+  }
+}
+
 // 自動ブログ投稿処理（オプション）
 async function autoPostToMicroCMS(date, blogStructure) {
   const ENDPOINT_URL = process.env.ENDPOINT_URL;
@@ -356,9 +448,23 @@ async function main() {
         
         // オプション: 自動投稿
         const autoPostEnabled = process.env.AUTO_POST === 'true';
+        const createNextDayMemoEnabled = process.env.CREATE_NEXT_DAY_MEMO !== 'false'; // デフォルトtrue
+        
         if (autoPostEnabled) {
           console.log('Auto posting to MicroCMS...');
-          await autoPostToMicroCMS(today, blogStructure);
+          const postSuccess = await autoPostToMicroCMS(today, blogStructure);
+          
+          // MicroCMS投稿が成功したら次の日のmemoファイルを作成
+          if (postSuccess && createNextDayMemoEnabled) {
+            console.log('Creating next day memo file...');
+            createNextDayMemo(today);
+          }
+        } else {
+          // 自動投稿が無効でも次の日のmemoファイルを作成
+          if (createNextDayMemoEnabled) {
+            console.log('Creating next day memo file...');
+            createNextDayMemo(today);
+          }
         }
       }
     }

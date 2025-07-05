@@ -26,6 +26,8 @@ nano .env
 - `ENDPOINT_URL`: MicroCMSのエンドポイントURL
 - `API_KEY`: MicroCMSのAPIキー
 - `AUTO_POST`: 自動投稿の有効/無効（true/false）
+- `CREATE_NEXT_DAY_MEMO`: 次の日memo作成の有効/無効（true/false、デフォルトtrue）
+- `MEMO_TEMPLATE`: カスタムmemoテンプレート（オプション）
 - `LOG_DIR`: ログファイルの保存場所
 - `BLOG_STRUCTURE_DIR`: ブログ構成案の保存場所
 - `CREATED_BLOGS_MD_DIR`: 完成ブログMDの保存場所
@@ -133,6 +135,9 @@ crontab -e
 - `blogs/created_blogs_md/yyyy-mm-dd-script.md`: SEO対策済みMarkdown記事
 - `blogs/created_blogs_json/yyyy-mm-dd-script.json`: 構造化JSONデータ
 
+### 4. 次の日memoファイル
+- `memo/yyyy-mm-dd-topic.md`: 次の日の学習メモテンプレート
+
 ## トラブルシューティング
 
 ### よくある問題
@@ -181,6 +186,12 @@ API_KEY=your-microcms-api-key
 
 # 自動投稿設定
 AUTO_POST=false
+
+# 次の日memo作成設定
+CREATE_NEXT_DAY_MEMO=true
+
+# memoテンプレート設定（オプション）
+# MEMO_TEMPLATE=カスタムテンプレート内容
 
 # 保存場所設定
 LOG_DIR=./logs
