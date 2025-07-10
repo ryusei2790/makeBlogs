@@ -397,6 +397,76 @@ async function autoPostToMicroCMS(date, blogStructure) {
   }
 }
 
+//wordpressPost
+
+// WordPress投稿＆監視クラス
+const matter = require('gray-matter');
+const chokidar = require('chokidar');
+
+class WordPressPoster {
+  constructor(options = {}) {
+    this.wpUrl = options.wpUrl || process.env.WP_URL || 'https://yourdomain.com/wp-json/wp/v2/posts';
+    this.username = options.username || process.env.WP_USER || 'your-username';
+    this.password = options.password || process.env.WP_APP_PASSWORD || 'your-application-password';
+    this.watchDir = options.watchDir || 'blogs/created_blogs/*.md';
+    this.watcher = null;
+  }
+
+  async postToWordPress(filePath) {
+    const fs = require('fs');
+    const fetch = require('node-fetch');
+    const content = fs.readFileSync(filePath, 'utf-8');
+    const parsed = matter(content);
+    const data = {
+      title: parsed.data.title || this._extractTitleFromFileName(filePath),
+      content: parsed.content,
+      status: 'publish'
+    };
+    const res = await fetch(this.wpUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic ' + Buffer.from(`${this.username}:${this.password}`).toString('base64')
+      },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      console.error('WordPress投稿失敗:', await res.text());
+    } else {
+      console.log('WordPress投稿成功:', await res.json());
+    }
+  }
+
+  watchFolder() {
+    if (this.watcher) {
+      this.watcher.close();
+    }
+    this.watcher = chokidar.watch(this.watchDir, {
+      ignored: /(^|[\/\\])\../,
+      persistent: true,
+    });
+    this.watcher.on('add', (path) => {
+      console.log(`WordPress用: 新規ファイル検知：${path}`);
+      this.postToWordPress(path);
+    });
+    console.log(`WordPress用: 監視開始： ${this.watchDir}`);
+  }
+
+  _extractTitleFromFileName(filePath) {
+    // ファイル名からタイトルを推測（例: 2025-07-04-react-usestate-pagination.md → react-usestate-pagination）
+    const base = require('path').basename(filePath, '.md');
+    const parts = base.split('-');
+    if (parts.length > 3) {
+      return parts.slice(3).join('-');
+    }
+    return base;
+  }
+}
+// 使用例:
+// const wpPoster = new WordPressPoster();
+// wpPoster.watchFolder();
+
+
 // メイン処理
 async function main() {
   console.log('Starting Dify API integration...');
