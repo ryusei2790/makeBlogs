@@ -11,7 +11,11 @@
     "daemon:status": "node scripts/daemon.js --status",
     "daemon:run-now": "node scripts/daemon.js --run-now",
     "watch": "node scripts/autoPostToMicroCMS.js",
-    "cron-setup": "chmod +x scripts/setup-cron.sh && ./scripts/setup-cron.sh"
+    "cron-setup": "chmod +x scripts/setup-cron.sh && ./scripts/setup-cron.sh",
+    "test:dify": "node scripts/test-dify-api.js",
+    "test:dify:help": "node scripts/test-dify-api.js --help",
+    "test:wp": "node scripts/test-wordpress-api.js",
+    "test:wp:help": "node scripts/test-wordpress-api.js --help"
   },
   "keywords": [],
   "author": "",
