@@ -107,17 +107,59 @@ function saveResult(date, memoContent, difyResponse) {
   }
 }
 
+
+
+// 技術的なポイントを抽出する関数
+function extractTechnicalPoints(text) {
+  // 技術的なポイントを抽出するロジック
+  const points = [];
+  const lines = text.split('\n');
+  
+  for (const line of lines) {
+    if (line.includes('技術') || line.includes('コード') || line.includes('API') || line.includes('エラー') || 
+        line.includes('useState') || line.includes('React') || line.includes('JavaScript')) {
+      points.push(line.trim());
+    }
+  }
+  
+  return points.length > 0 ? points.join('\n') : '技術的なポイントが見つかりませんでした。';
+}
+
+// ブログ記事のアイデアを抽出する関数
+function extractBlogIdeas(text) {
+  // ブログアイデアを抽出するロジック
+  const ideas = [];
+  const lines = text.split('\n');
+  
+  for (const line of lines) {
+    if (line.includes('タイトル') || line.includes('アイデア') || line.includes('記事') || 
+        line.includes('ブログ') || line.includes('学習')) {
+      ideas.push(line.trim());
+    }
+  }
+  
+  return ideas.length > 0 ? ideas.join('\n') : 'ブログアイデアが見つかりませんでした。';
+}
+
 // Difyの返答を解析してブログ記事構成案を作成
 function createBlogStructure(date, difyResponse) {
   // Dify APIの正しいレスポンス形式に基づいて回答を取得
   let answer = '';
   
-  if (difyResponse.error) {
+  // 新しいレスポンス形式に対応
+  if (difyResponse.data && difyResponse.data.outputs && difyResponse.data.outputs.structured_output) {
+    try {
+      const structuredOutput = JSON.parse(difyResponse.data.outputs.structured_output);
+      answer = structuredOutput.body || difyResponse.data.outputs.structured_output;
+    } catch (e) {
+      answer = difyResponse.data.outputs.structured_output;
+    }
+  } else if (difyResponse.error) {
     // エラーの場合
     console.error('Dify API Error:', difyResponse.error);
     answer = `エラーが発生しました: ${difyResponse.error.message}`;
   } else if (difyResponse.answer) {
-    // 成功の場合
+    // 古いレスポンス形式の場合
     answer = difyResponse.answer;
     console.log('Dify API Response - Answer:', answer);
     console.log('Dify API Response - Conversation ID:', difyResponse.conversation_id);
@@ -204,7 +246,6 @@ function saveCompletedBlogMD(date, blogStructure) {
   // SEO対策済みのMarkdownブログ記事を作成
   let markdownContent = `---
 title: "${blogStructure.title}"
-description: "Dify APIから生成されたブログ記事です。"
 keywords: ["Dify", "AI", "ブログ", "学習記録"]
 date: "${date}"
 author: "Ryusei"
@@ -244,7 +285,6 @@ function saveCompletedBlogJSON(date, blogStructure) {
   const blogData = {
     metadata: {
       title: blogStructure.title,
-      description: "Dify APIから生成されたブログ記事です。",
       keywords: ["Dify", "AI", "ブログ", "学習記録"],
       date: date,
       author: "Ryusei",
@@ -349,25 +389,28 @@ async function autoPostToMicroCMS(date, blogStructure) {
       blogContent += `${section.content}\n\n`;
     });
     
-    // 説明文を生成（最初のセクションから抽出）
-    const description = blogStructure.sections
-      .find(section => section.heading === "今日の学び")?.content
-      ?.substring(0, 100) + "..." || "Dify APIから生成されたブログ記事です。";
+    // 説明文を生成（Difyからの提案セクションから抽出）いったんなし
+    // const description = blogStructure.sections
+    //   .find(section => section.heading === "今日の学び")?.content
+    //   ?.substring(0, 100) + "..." || "開発日記として作成されたDifyブログ記事です。";
     
-    // タグを生成
-    const tags = ["Dify", "AI", "学習記録", date];
+    // アイキャッチ画像の設定
+    const eyecatchImage = process.env.EYECATCH_IMAGE || 'default-eyecatch.jpg';
+    const eyecatchUrl = process.env.EYECATCH_BASE_URL || 'https://yourdomain.com';
     
     // MicroCMSに投稿するデータを構築
     const postData = {
       title: blogStructure.title,
       content: blogContent,
-      description: description,
-      tags: tags,
       publishedAt: new Date().toISOString(),
+      eyecatch: {
+        url: `${eyecatchUrl}/image/${eyecatchImage}`,
+        alt: "開発日記 - 学習記録"
+      },
       // カスタムフィールドがあれば追加
       category: "学習記録",
       author: "Ryusei",
-      source: "Dify API"
+      source: "開発日記として作成"
     };
     
     console.log('Posting to MicroCMS with data:', JSON.stringify(postData, null, 2));
@@ -398,84 +441,84 @@ async function autoPostToMicroCMS(date, blogStructure) {
 }
 
 // WordPress投稿機能
-const matter = require('gray-matter');
+// const matter = require('gray-matter');
 
-// WordPressへの自動投稿機能
-async function autoPostToWordPress(date, blogStructure) {
-  const WP_URL = process.env.WP_URL;
-  const WP_USER = process.env.WP_USER;
-  const WP_APP_PASSWORD = process.env.WP_APP_PASSWORD;
+// // WordPressへの自動投稿機能
+// async function autoPostToWordPress(date, blogStructure) {
+//   const WP_URL = process.env.WP_URL;
+//   const WP_USER = process.env.WP_USER;
+//   const WP_APP_PASSWORD = process.env.WP_APP_PASSWORD;
   
-  if (!WP_URL || !WP_USER || !WP_APP_PASSWORD) {
-    console.log('WordPress credentials not found, skipping auto post');
-    return false;
-  }
+//   if (!WP_URL || !WP_USER || !WP_APP_PASSWORD) {
+//     console.log('WordPress credentials not found, skipping auto post');
+//     return false;
+//   }
   
-  try {
-    // ブログ記事の本文を作成（Markdown形式）
-    let blogContent = `# ${blogStructure.title}\n\n`;
-    blogStructure.sections.forEach(section => {
-      blogContent += `## ${section.heading}\n\n`;
-      blogContent += `${section.content}\n\n`;
-    });
+//   try {
+//     // ブログ記事の本文を作成（Markdown形式）
+//     let blogContent = `# ${blogStructure.title}\n\n`;
+//     blogStructure.sections.forEach(section => {
+//       blogContent += `## ${section.heading}\n\n`;
+//       blogContent += `${section.content}\n\n`;
+//     });
     
-    // 説明文を生成（最初のセクションから抽出）
-    const description = blogStructure.sections
-      .find(section => section.heading === "今日の学び")?.content
-      ?.substring(0, 100) + "..." || "Dify APIから自動生成されたブログ記事です。";
+//     // 説明文を生成（最初のセクションから抽出）
+//     const description = blogStructure.sections
+//       .find(section => section.heading === "今日の学び")?.content
+//       ?.substring(0, 100) + "..." || "Dify APIから自動生成されたブログ記事です。";
     
-    // タグを生成
-    const tags = ["Dify", "AI", "学習記録", date];
+//     // タグを生成
+//     const tags = ["Dify", "AI", "学習記録", date];
     
-    // WordPressに投稿するデータを構築
-    const postData = {
-      title: blogStructure.title,
-      content: blogContent,
-      excerpt: description,
-      status: 'draft', // 下書きとして投稿
-      tags: tags,
-      categories: [], // カテゴリは空
-      // カスタムフィールドがあれば追加
-      meta: {
-        author: "Ryusei",
-        source: "Dify API",
-        generated_at: new Date().toISOString()
-      }
-    };
+//     // WordPressに投稿するデータを構築
+//     const postData = {
+//       title: blogStructure.title,
+//       content: blogContent,
+//       excerpt: description,
+//       status: 'draft', // 下書きとして投稿
+//       tags: tags,
+//       categories: [], // カテゴリは空
+//       // カスタムフィールドがあれば追加
+//       meta: {
+//         author: "Ryusei",
+//         source: "Dify API",
+//         generated_at: new Date().toISOString()
+//       }
+//     };
     
-    console.log('Posting to WordPress with data:', JSON.stringify(postData, null, 2));
+//     console.log('Posting to WordPress with data:', JSON.stringify(postData, null, 2));
     
-    // Basic認証のヘッダーを作成
-    const authString = Buffer.from(`${WP_USER}:${WP_APP_PASSWORD}`).toString('base64');
+//     // Basic認証のヘッダーを作成
+//     const authString = Buffer.from(`${WP_USER}:${WP_APP_PASSWORD}`).toString('base64');
     
-    // WordPressに投稿
-    const response = await fetch(WP_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${authString}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(postData)
-    });
+//     // WordPressに投稿
+//     const response = await fetch(WP_URL, {
+//       method: 'POST',
+//       headers: {
+//         'Authorization': `Basic ${authString}`,
+//         'Content-Type': 'application/json'
+//       },
+//       body: JSON.stringify(postData)
+//     });
     
-    if (response.ok) {
-      const result = await response.json();
-      console.log('Blog post published to WordPress successfully:', result);
-      console.log(`📝 投稿ID: ${result.id || 'N/A'}`);
-      console.log(`🔗 投稿URL: ${result.link || 'N/A'}`);
-      console.log(`📅 作成日時: ${result.date || 'N/A'}`);
-      console.log(`📊 ステータス: ${result.status || 'N/A'}`);
-      return true;
-    } else {
-      const errorText = await response.text();
-      console.error(`Failed to post to WordPress: ${response.status} - ${errorText}`);
-      return false;
-    }
-  } catch (error) {
-    console.error(`Error posting to WordPress: ${error.message}`);
-    return false;
-  }
-}
+//     if (response.ok) {
+//       const result = await response.json();
+//       console.log('Blog post published to WordPress successfully:', result);
+//       console.log(`📝 投稿ID: ${result.id || 'N/A'}`);
+//       console.log(`🔗 投稿URL: ${result.link || 'N/A'}`);
+//       console.log(`📅 作成日時: ${result.date || 'N/A'}`);
+//       console.log(`📊 ステータス: ${result.status || 'N/A'}`);
+//       return true;
+//     } else {
+//       const errorText = await response.text();
+//       console.error(`Failed to post to WordPress: ${response.status} - ${errorText}`);
+//       return false;
+//     }
+//   } catch (error) {
+//     console.error(`Error posting to WordPress: ${error.message}`);
+//     return false;
+//   }
+// }
 
 // WordPress投稿＆監視クラス（既存の監視機能用）
 const chokidar = require('chokidar');
@@ -622,12 +665,12 @@ async function main() {
           }
           
           // WordPressへの自動投稿
-          const autoPostWordPress = process.env.AUTO_POST_WORDPRESS !== 'false';
-          if (autoPostWordPress) {
-            console.log('Auto posting to WordPress...');
-            const wordPressSuccess = await autoPostToWordPress(today, blogStructure);
-            if (wordPressSuccess) anyPostSuccess = true;
-          }
+          // const autoPostWordPress = process.env.AUTO_POST_WORDPRESS !== 'false';
+          // if (autoPostWordPress) {
+          //   console.log('Auto posting to WordPress...');
+          //   const wordPressSuccess = await autoPostToWordPress(today, blogStructure);
+          //   if (wordPressSuccess) anyPostSuccess = true;
+          // }
           
           // どちらかの投稿が成功したら次の日のmemoファイルを作成
           if (anyPostSuccess && createNextDayMemoEnabled) {
@@ -662,7 +705,5 @@ module.exports = {
   main, 
   getTodayDate, 
   readMemoFile, 
-  postToDify, 
-  autoPostToWordPress, 
-  WordPressPoster 
+  postToDify
 };
