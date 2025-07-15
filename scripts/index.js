@@ -395,18 +395,18 @@ async function autoPostToMicroCMS(date, blogStructure) {
     //   ?.substring(0, 100) + "..." || "開発日記として作成されたDifyブログ記事です。";
     
     // アイキャッチ画像の設定
-    const eyecatchImage = process.env.EYECATCH_IMAGE || 'default-eyecatch.jpg';
-    const eyecatchUrl = process.env.EYECATCH_BASE_URL || 'https://yourdomain.com';
+    // const eyecatchImage = process.env.EYECATCH_IMAGE || 'default-eyecatch.jpg';
+    // const eyecatchUrl = process.env.EYECATCH_BASE_URL || 'https://yourdomain.com';
     
     // MicroCMSに投稿するデータを構築
     const postData = {
       title: blogStructure.title,
       content: blogContent,
       publishedAt: new Date().toISOString(),
-      eyecatch: {
-        url: `${eyecatchUrl}/image/${eyecatchImage}`,
-        alt: "開発日記 - 学習記録"
-      },
+      // eyecatch: {
+      //   url: `${eyecatchUrl}/image/${eyecatchImage}`,
+      //   alt: "開発日記 - 学習記録"
+      // },
       // カスタムフィールドがあれば追加
       category: "学習記録",
       author: "Ryusei",
